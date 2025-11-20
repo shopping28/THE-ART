@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Activations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
+        .req { background: #1a1a2e; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #444; border-left: 5px solid #f39c12; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 10px; }
+        .app { background: #00f260; } .rej { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+    <a href="admin_dashboard.html" style="color:#aaa;">← Back</a>
+    <h2>Pending Activations</h2>
+    <div id="list">Loading...</div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDzEo1rLM6xwz8O4iEYIOvFi4JZQG_TJ0g", authDomain: "art-paid-work001.firebaseapp.com", databaseURL: "https://art-paid-work001-default-rtdb.firebaseio.com", projectId: "art-paid-work001", storageBucket: "art-paid-work001.firebasestorage.app", messagingSenderId: "524647364992", appId: "1:524647364992:web:c91b2dc55ab9b30d3ba965" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('activation_requests').orderByChild('status').equalTo('pending').on('value', (snapshot) => {
+            const list = document.getElementById('list'); list.innerHTML = "";
+            if(!snapshot.exists()) { list.innerHTML = "No pending requests."; return; }
+            snapshot.forEach((child) => {
+                const d = child.val();
+                list.innerHTML += `<div class="req"><p>User Phone: <b>${d.senderPhone}</b> | TrxID: <b style="color:#f1c40f">${d.trxId}</b></p><button class="app" onclick="approve('${child.key}', '${d.uid}')">APPROVE</button><button class="rej" onclick="reject('${child.key}')">REJECT</button></div>`;
+            });
+        });
+
+        async function approve(key, uid) {
+            if(!confirm("Approve?")) return;
+            // 1. Get Settings
+            const rates = (await db.ref('settings/referral').once('value')).val() || {level1:0,level2:0,level3:0};
+            // 2. Get User
+            const user = (await db.ref('users/'+uid).once('value')).val();
+            // 3. Distribute
+            if(user && user.referredBy && user.referredBy !== "the_art2000") {
+                await distribute(user.referredBy, 1, rates);
+            }
+            // 4. Activate
+            db.ref('users/'+uid).update({status:'active'});
+            db.ref('activation_requests/'+key).update({status:'approved'});
+            alert("Done!");
+        }
+
+        async function distribute(code, lvl, rates) {
+            if(lvl > 3) return;
+            const snap = await db.ref('users').orderByChild('ownCode').equalTo(code).once('value');
+            if(snap.exists()) {
+                const pid = Object.keys(snap.val())[0];
+                const pdata = Object.values(snap.val())[0];
+                let amt = lvl===1?rates.level1 : lvl===2?rates.level2 : rates.level3;
+                if(amt > 0) db.ref('users/'+pid).update({balance: (pdata.balance||0)+amt});
+                if(pdata.referredBy && pdata.referredBy !== "the_art2000") await distribute(pdata.referredBy, lvl+1, rates);
+            }
+        }
+        function reject(key) { if(confirm("Reject?")) db.ref('activation_requests/'+key).update({status:'rejected'}); }
+    </script>
+</body>
+</html>

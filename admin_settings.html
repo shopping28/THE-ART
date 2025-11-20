@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
+        .card { background: #1a1a2e; padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        input { width: 100%; padding: 12px; background: #0f0c29; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; margin-top: 5px; margin-bottom: 10px; }
+        button { width: 100%; padding: 15px; background: #00f260; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: #0f0c29; }
+        label { color: #aaa; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <a href="admin_dashboard.html" style="color:#aaa;">← Back</a>
+    <h2 style="text-align:center;">System Settings</h2>
+
+    <div class="card">
+        <h3 style="color:#f1c40f;">💰 Payment Info</h3>
+        <label>Activation Fee (Tk)</label><input type="number" id="actFee">
+        <label>Personal Number</label><input type="number" id="adminPhone">
+        <button onclick="savePay()">Update Payment</button>
+    </div>
+
+    <div class="card">
+        <h3 style="color:#3498db;">👥 Referral Bonus</h3>
+        <label>Level 1 (Direct)</label><input type="number" id="lvl1">
+        <label>Level 2 (Upline)</label><input type="number" id="lvl2">
+        <label>Level 3 (Super)</label><input type="number" id="lvl3">
+        <button onclick="saveRef()">Update Bonus</button>
+    </div>
+
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDzEo1rLM6xwz8O4iEYIOvFi4JZQG_TJ0g", authDomain: "art-paid-work001.firebaseapp.com", databaseURL: "https://art-paid-work001-default-rtdb.firebaseio.com", projectId: "art-paid-work001", storageBucket: "art-paid-work001.firebasestorage.app", messagingSenderId: "524647364992", appId: "1:524647364992:web:c91b2dc55ab9b30d3ba965" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('settings').once('value', (snap) => {
+            const d = snap.val() || {};
+            if(d.payment) { document.getElementById('actFee').value = d.payment.fee; document.getElementById('adminPhone').value = d.payment.number; }
+            if(d.referral) { document.getElementById('lvl1').value = d.referral.level1; document.getElementById('lvl2').value = d.referral.level2; document.getElementById('lvl3').value = d.referral.level3; }
+        });
+
+        function savePay() {
+            db.ref('settings/payment').set({ fee: Number(document.getElementById('actFee').value), number: document.getElementById('adminPhone').value }).then(()=>alert("Saved!"));
+        }
+        function saveRef() {
+            db.ref('settings/referral').set({ level1: Number(document.getElementById('lvl1').value), level2: Number(document.getElementById('lvl2').value), level3: Number(document.getElementById('lvl3').value) }).then(()=>alert("Saved!"));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        .form-card { background: #1a1a2e; padding: 25px; border-radius: 15px; margin-bottom: 30px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background:#0f0c29; border:1px solid #444; color:white; border-radius: 8px; box-sizing: border-box; }
+        input:focus { border-color: #00f260; outline: none; }
+        button { width: 100%; padding: 15px; background: #00f260; border:none; font-weight:bold; cursor:pointer; color: #0f0c29; font-size: 1rem; border-radius: 8px; }
+        .task { background: #1a1a2e; padding: 15px 20px; margin-top: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #f1c40f; }
+        .task span { font-weight: 600; }
+        .del-btn { background: #e74c3c; color: white; width: auto; padding: 8px 12px; border-radius: 5px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="admin_dashboard.html" style="color:#aaa; text-decoration: none;">← Back to Dashboard</a>
+        <h2 style="text-align: center;">Manage Tasks</h2>
+        
+        <div class="form-card">
+            <h3>Add a New Task</h3>
+            <input id="tt" placeholder="Task Title (e.g., Visit Our Website)" required>
+            <input id="tr" type="number" placeholder="Reward Amount (e.g., 5)" required>
+            <input id="tl" placeholder="Task Link (Website URL)" required>
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <h3>Current Tasks</h3>
+        <div id="list">Loading...</div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDzEo1rLM6xwz8O4iEYIOvFi4JZQG_TJ0g", authDomain: "art-paid-work001.firebaseapp.com", databaseURL: "https://art-paid-work001-default-rtdb.firebaseio.com", projectId: "art-paid-work001", storageBucket: "art-paid-work001.firebasestorage.app", messagingSenderId: "524647364992", appId: "1:524647364992:web:c91b2dc55ab9b30d3ba965" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function addTask() {
+            const title = document.getElementById('tt').value;
+            const reward = Number(document.getElementById('tr').value);
+            const link = document.getElementById('tl').value;
+
+            if (!title || !reward || !link) {
+                alert("Please fill all the fields.");
+                return;
+            }
+            // সেকেন্ড (timer) বাদ দিয়ে টাস্ক যোগ করা হচ্ছে
+            db.ref('tasks').push({ 
+                title: title, 
+                reward: reward, 
+                link: link 
+            }).then(() => {
+                alert("Task added successfully!");
+                document.getElementById('tt').value = '';
+                document.getElementById('tr').value = '';
+                document.getElementById('tl').value = '';
+            });
+        }
+
+        const taskList = document.getElementById('list');
+        db.ref('tasks').on('value', snapshot => {
+            taskList.innerHTML = "";
+            if (!snapshot.exists()) {
+                taskList.innerHTML = "<p>No tasks found.</p>"; return;
+            }
+            snapshot.forEach(childSnapshot => {
+                const task = childSnapshot.val();
+                const taskKey = childSnapshot.key;
+                taskList.innerHTML += `<div class="task"><span>${task.title} (৳${task.reward})</span><button class="del-btn" onclick="deleteTask('${taskKey}')">Delete</button></div>`;
+            });
+        });
+
+        function deleteTask(key) {
+            if (confirm("Are you sure you want to delete this task?")) {
+                db.ref('tasks/' + key).remove();
+            }
+        }
+    </script>
+</body>
+</html>

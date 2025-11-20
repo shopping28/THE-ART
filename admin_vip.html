@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VIP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
+        input { padding: 10px; margin: 5px; background:#1a1a2e; border:1px solid #444; color:white; }
+        .lvl { background: #1a1a2e; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <a href="admin_dashboard.html" style="color:#aaa;">← Back</a>
+    <h2>Manage VIP</h2>
+    <input id="ln" placeholder="Level No"><input id="lt" placeholder="Target Ref"><input id="lb" placeholder="Bonus">
+    <button onclick="add()" style="padding:10px; background:#f1c40f; cursor:pointer;">Add Level</button>
+    <div id="list"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDzEo1rLM6xwz8O4iEYIOvFi4JZQG_TJ0g", authDomain: "art-paid-work001.firebaseapp.com", databaseURL: "https://art-paid-work001-default-rtdb.firebaseio.com", projectId: "art-paid-work001", storageBucket: "art-paid-work001.firebasestorage.app", messagingSenderId: "524647364992", appId: "1:524647364992:web:c91b2dc55ab9b30d3ba965" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function add() {
+            const n = document.getElementById('ln').value;
+            db.ref('settings/vip_levels/level'+n).set({ level:Number(n), target:Number(document.getElementById('lt').value), bonus:Number(document.getElementById('lb').value) });
+            alert("Added");
+        }
+        db.ref('settings/vip_levels').orderByChild('level').on('value', s => {
+            document.getElementById('list').innerHTML = "";
+            s.forEach(c => {
+                document.getElementById('list').innerHTML += `<div class="lvl"><span>Level ${c.val().level}: ${c.val().target} Refs = ৳${c.val().bonus}</span><button onclick="del('${c.key}')" style="background:red;color:white;">X</button></div>`;
+            });
+        });
+        function del(k) { if(confirm("Delete?")) db.ref('settings/vip_levels/'+k).remove(); }
+    </script>
+</body>
+</html>

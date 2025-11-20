@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .logout { background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+        .card { background: linear-gradient(145deg, #1e1e2f, #161625); padding: 25px; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: #00f260; }
+        .card i { font-size: 2.5rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h2>🔥 Master Control</h2><button class="logout" onclick="logout()">Logout</button></div>
+
+    <div class="grid">
+        <div class="card" onclick="window.location.href='admin_activation.html'"><i class="fas fa-bolt" style="color:#f1c40f;"></i><h4>Activations</h4></div>
+        <div class="card" onclick="window.location.href='admin_withdraw.html'"><i class="fas fa-wallet" style="color:#00f260;"></i><h4>Withdrawals</h4></div>
+        <div class="card" onclick="window.location.href='admin_tasks.html'"><i class="fas fa-tasks" style="color:#3498db;"></i><h4>Manage Tasks</h4></div>
+        <div class="card" onclick="window.location.href='admin_users.html'"><i class="fas fa-users" style="color:#9b59b6;"></i><h4>User List</h4></div>
+        <div class="card" onclick="window.location.href='admin_vip.html'"><i class="fas fa-crown" style="color:#e67e22;"></i><h4>VIP Levels</h4></div>
+        <div class="card" onclick="window.location.href='admin_settings.html'"><i class="fas fa-cogs" style="color:#ecf0f1;"></i><h4>Settings</h4></div>
+    </div>
+
+    <script>
+        if(localStorage.getItem('admin_logged') !== 'true') window.location.href = 'admin_login.html';
+        function logout() { localStorage.removeItem('admin_logged'); window.location.href = 'admin_login.html'; }
+    </script>
+</body>
+</html>
